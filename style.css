@@ -247,12 +247,254 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 8px;
+            }
+
+            .header p {
+                font-size: 0.95rem;
+            }
+
             .main-content {
                 grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px 15px;
             }
-            
+
+            .input-panel, .results-panel {
+                padding: 20px 15px;
+            }
+
+            .input-group {
+                margin-bottom: 20px;
+            }
+
+            .input-group label {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+            }
+
+            .input-group input, .input-group select {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+
+            .calculate-btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+
+            .method-tabs {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .method-tab {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+            }
+
+            .result-card {
+                padding: 15px;
+            }
+
+            .result-value {
+                font-size: 1.5rem;
+            }
+
+            .result-label {
+                font-size: 0.8rem;
+            }
+
+            .comparison-table {
+                font-size: 0.8rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 8px 6px;
+            }
+
+            .chart-container, .steps-container {
+                padding: 15px;
+                margin-top: 20px;
+            }
+
+            .chart-container h3, .steps-container h3 {
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+
+            .step {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+
+            .step h4 {
+                font-size: 0.9rem;
+            }
+
+            .step p {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+
+            .function-examples {
+                padding: 12px;
+                font-size: 0.8rem;
+            }
+
+            .function-examples ul {
+                margin-left: 15px;
+            }
+
+            .export-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
             .header h1 {
-                font-size: 2rem;
+                font-size: 1.5rem;
+            }
+
+            .header p {
+                font-size: 0.85rem;
+            }
+
+            .main-content {
+                padding: 15px 10px;
+                gap: 15px;
+            }
+
+            .input-panel, .results-panel {
+                padding: 15px 10px;
+            }
+
+            .input-group input, .input-group select {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+
+            .calculate-btn {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            .method-tabs {
+                padding: 3px;
+            }
+
+            .method-tab {
+                padding: 10px 8px;
+                font-size: 0.8rem;
+            }
+
+            .result-card {
+                padding: 12px;
+            }
+
+            .result-value {
+                font-size: 1.3rem;
+            }
+
+            .comparison-table {
+                font-size: 0.7rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 6px 4px;
+            }
+
+            .chart-container {
+                padding: 10px;
+            }
+
+            #plotContainer {
+                height: 300px !important;
+            }
+
+            .steps-container {
+                padding: 10px;
+            }
+
+            .step {
+                padding: 10px;
+            }
+
+            .step h4 {
+                font-size: 0.85rem;
+            }
+
+            .step p {
+                font-size: 0.8rem;
+            }
+
+            .function-examples {
+                padding: 10px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Landscape orientation untuk handphone */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.6rem;
+                margin-bottom: 5px;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+
+            #plotContainer {
+                height: 250px !important;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) {
+            .calculate-btn:hover,
+            .export-btn:hover,
+            .method-tab:hover {
+                transform: none;
+            }
+
+            .calculate-btn:active {
+                transform: scale(0.98);
+            }
+
+            .method-tab {
+                min-height: 44px; /* Minimum touch target size */
+            }
+
+            .input-group input,
+            .input-group select {
+                min-height: 44px;
             }
         }
 

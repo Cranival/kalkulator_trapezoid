@@ -1,7 +1,8 @@
-let currentResults = {};
+ let currentResults = {};
 
         function parseFunction(funcStr) {
             try {
+                // Replace common mathematical notation
                 let processed = funcStr
                     .replace(/\^/g, '**')
                     .replace(/sin/g, 'Math.sin')
@@ -42,7 +43,7 @@ let currentResults = {};
         }
 
         function simpsonMethod(f, a, b, n) {
-            if (n % 2 !== 0) n++;
+            if (n % 2 !== 0) n++; // Simpson memerlukan n genap
             
             const h = (b - a) / n;
             let sum = f(a) + f(b);
@@ -73,7 +74,7 @@ let currentResults = {};
             steps.push(`Lebar subinterval h = (${b} - ${a}) / ${n} = ${h.toFixed(6)}`);
             
             for (let i = 0; i < n; i++) {
-                const x = a + i * h + h/2; 
+                const x = a + i * h + h/2; // Midpoint
                 const fx = f(x);
                 sum += fx;
                 steps.push(`f(${x.toFixed(3)}) = ${fx.toFixed(6)}`);
@@ -86,6 +87,7 @@ let currentResults = {};
         }
 
         function calculateExact(funcStr, a, b) {
+            // Simplified exact calculation for common functions
             try {
                 if (funcStr === 'x^2' || funcStr === 'x**2') {
                     return (1/3) * (Math.pow(b, 3) - Math.pow(a, 3));
@@ -117,8 +119,10 @@ let currentResults = {};
 
                 const f = parseFunction(funcStr);
                 
+                // Test function with sample value
                 f((a + b) / 2);
 
+                // Calculate using different methods
                 const trapezoid = trapezoidMethod(f, a, b, n);
                 const simpson = simpsonMethod(f, a, b, n);
                 const rectangle = rectangleMethod(f, a, b, n);
@@ -201,11 +205,13 @@ let currentResults = {};
         }
 
         function showMethod(method) {
+            // Update active tab
             document.querySelectorAll('.method-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             event.target.classList.add('active');
 
+            // Show steps for selected method
             const methodData = currentResults[method];
             if (methodData) {
                 const stepsHtml = methodData.steps.map((step, index) => `
@@ -217,6 +223,7 @@ let currentResults = {};
 
                 document.getElementById('stepsContainer').innerHTML = stepsHtml;
 
+                // Update result card
                 const resultCard = document.querySelector('.result-card');
                 if (resultCard) {
                     resultCard.innerHTML = `
@@ -285,16 +292,47 @@ let currentResults = {};
                 marker: { color: '#f5576c', size: 8 }
             };
 
+            // Responsive layout configuration
+            const isMobile = window.innerWidth <= 768;
+            
             const layout = {
-                title: `Visualisasi Integral: f(x) = ${currentResults.function}`,
-                xaxis: { title: 'x' },
-                yaxis: { title: 'f(x)' },
+                title: {
+                    text: `Visualisasi Integral: f(x) = ${currentResults.function}`,
+                    font: { size: isMobile ? 14 : 16 }
+                },
+                xaxis: { 
+                    title: { text: 'x', font: { size: isMobile ? 12 : 14 } },
+                    tickfont: { size: isMobile ? 10 : 12 }
+                },
+                yaxis: { 
+                    title: { text: 'f(x)', font: { size: isMobile ? 12 : 14 } },
+                    tickfont: { size: isMobile ? 10 : 12 }
+                },
                 shapes: shapes,
-                showlegend: true,
-                responsive: true
+                showlegend: !isMobile, // Hide legend on mobile to save space
+                responsive: true,
+                margin: {
+                    l: isMobile ? 40 : 60,
+                    r: isMobile ? 20 : 40,
+                    t: isMobile ? 40 : 60,
+                    b: isMobile ? 40 : 60
+                },
+                legend: {
+                    orientation: isMobile ? 'h' : 'v',
+                    x: isMobile ? 0 : 1,
+                    y: isMobile ? -0.2 : 1,
+                    font: { size: isMobile ? 10 : 12 }
+                }
             };
 
-            Plotly.newPlot('plotContainer', [trace1, trace2], layout);
+            const config = {
+                responsive: true,
+                displayModeBar: !isMobile, // Hide toolbar on mobile
+                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+                displaylogo: false
+            };
+
+            Plotly.newPlot('plotContainer', [trace1, trace2], layout, config);
         }
 
         function showError(message) {
@@ -342,6 +380,22 @@ let currentResults = {};
             URL.revokeObjectURL(url);
         }
 
+        // Initialize with default calculation
         window.onload = function() {
             calculateIntegral();
+            
+            // Add window resize listener for responsive plot
+            window.addEventListener('resize', function() {
+                if (currentResults.trapezoid) {
+                    const funcStr = document.getElementById('functionInput').value;
+                    const a = parseFloat(document.getElementById('lowerBound').value);
+                    const b = parseFloat(document.getElementById('upperBound').value);
+                    const n = parseInt(document.getElementById('intervals').value);
+                    const f = parseFunction(funcStr);
+                    
+                    setTimeout(() => {
+                        plotFunction(f, a, b, n);
+                    }, 100);
+                }
+            });
         };
