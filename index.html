@@ -9,7 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
 </head>
 <body>
-     <div class="container">
+    <body>
+    <div class="container">
         <div class="header">
             <h1>🧮 Kalkulator Integral Numerik</h1>
             <p>Hitung integral dengan metode Trapezoid, Simpson, dan Rectangle secara dinamis</p>
@@ -21,32 +22,35 @@
                 
                 <div class="input-group">
                     <label for="functionInput">Fungsi f(x):</label>
-                    <input type="text" id="functionInput" class="function-input" value="x^2" placeholder="Contoh: x^2, sin(x), exp(x)">
+                    <input type="text" id="functionInput" class="function-input" value="" placeholder="Contoh: x^2, sin(x), exp(x), log(x), sqrt(x)">
                     <div class="function-examples">
                         <h5>Contoh Fungsi:</h5>
                         <ul>
                             <li><code>x^2</code> - Fungsi kuadrat</li>
                             <li><code>sin(x)</code> - Fungsi sinus</li>
-                            <li><code>exp(x)</code> - Fungsi exponential</li>
-                            <li><code>log(x)</code> - Fungsi logaritma</li>
-                            <li><code>sqrt(x)</code> - Fungsi akar</li>
+                            <li><code>exp(x)</code> - Fungsi exponential (e^x)</li>
+                            <li><code>log(x)</code> - Fungsi logaritma natural (ln x) <em>*x > 0</em></li>
+                            <li><code>sqrt(x)</code> - Fungsi akar kuadrat <em>*x ≥ 0</em></li>
                         </ul>
+                        <p style="margin-top: 8px; font-size: 0.8rem; color: #666;">
+                            <strong>Tips:</strong> Pastikan domain fungsi sesuai dengan batas integral
+                        </p>
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label for="lowerBound">Batas Bawah (a):</label>
-                    <input type="number" id="lowerBound" value="0" step="0.1">
+                    <input type="number" id="lowerBound" value="" step="0.1">
                 </div>
 
                 <div class="input-group">
                     <label for="upperBound">Batas Atas (b):</label>
-                    <input type="number" id="upperBound" value="2" step="0.1">
+                    <input type="number" id="upperBound" value="" step="0.1">
                 </div>
 
                 <div class="input-group">
                     <label for="intervals">Jumlah Subinterval (n):</label>
-                    <input type="number" id="intervals" value="4" min="2" max="1000">
+                    <input type="number" id="intervals" value="" min="2" max="1000">
                 </div>
 
                 <button class="calculate-btn" onclick="calculateIntegral()">

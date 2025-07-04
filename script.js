@@ -2,22 +2,36 @@
 
         function parseFunction(funcStr) {
             try {
-                // Replace common mathematical notation
+                // Replace common mathematical notation with proper error handling
                 let processed = funcStr
                     .replace(/\^/g, '**')
-                    .replace(/sin/g, 'Math.sin')
-                    .replace(/cos/g, 'Math.cos')
-                    .replace(/tan/g, 'Math.tan')
-                    .replace(/exp/g, 'Math.exp')
-                    .replace(/log/g, 'Math.log')
-                    .replace(/sqrt/g, 'Math.sqrt')
-                    .replace(/abs/g, 'Math.abs')
-                    .replace(/pi/g, 'Math.PI')
-                    .replace(/e/g, 'Math.E');
+                    .replace(/\bsin\b/g, 'Math.sin')
+                    .replace(/\bcos\b/g, 'Math.cos')
+                    .replace(/\btan\b/g, 'Math.tan')
+                    .replace(/\bexp\b/g, 'Math.exp')
+                    .replace(/\blog\b/g, 'Math.log')
+                    .replace(/\bln\b/g, 'Math.log')
+                    .replace(/\bsqrt\b/g, 'Math.sqrt')
+                    .replace(/\babs\b/g, 'Math.abs')
+                    .replace(/\bpi\b/g, 'Math.PI')
+                    .replace(/\be\b/g, 'Math.E');
 
-                return new Function('x', `return ${processed}`);
+                // Create function with error handling for domain issues
+                const func = new Function('x', `
+                    try {
+                        const result = ${processed};
+                        if (isNaN(result) || !isFinite(result)) {
+                            throw new Error('Domain error');
+                        }
+                        return result;
+                    } catch (e) {
+                        throw new Error('Evaluation error at x = ' + x);
+                    }
+                `);
+
+                return func;
             } catch (error) {
-                throw new Error('Format fungsi tidak valid. Gunakan notasi JavaScript (contoh: x**2, Math.sin(x))');
+                throw new Error('Format fungsi tidak valid. Gunakan notasi: x**2, sin(x), exp(x), log(x), sqrt(x)');
             }
         }
 
@@ -117,10 +131,33 @@
                     throw new Error('Jumlah subinterval minimal 2');
                 }
 
+                // Special domain validation for common functions
+                if (funcStr.includes('log') && a <= 0) {
+                    throw new Error('Domain Error: log(x) memerlukan x > 0. Gunakan batas bawah > 0');
+                }
+
+                if (funcStr.includes('sqrt') && a < 0) {
+                    throw new Error('Domain Error: sqrt(x) memerlukan x ≥ 0. Gunakan batas bawah ≥ 0');
+                }
+
+                if (funcStr.includes('1/x') && (a <= 0 && b >= 0)) {
+                    throw new Error('Domain Error: 1/x memiliki diskontinuitas di x = 0');
+                }
+
                 const f = parseFunction(funcStr);
                 
-                // Test function with sample value
-                f((a + b) / 2);
+                // Test function with sample values to ensure it's valid
+                const testPoints = [a, (a + b) / 2, b];
+                for (const point of testPoints) {
+                    try {
+                        const result = f(point);
+                        if (!isFinite(result) || isNaN(result)) {
+                            throw new Error(`Fungsi tidak terdefinisi di x = ${point}`);
+                        }
+                    } catch (e) {
+                        throw new Error(`Error evaluasi fungsi di x = ${point}: ${e.message}`);
+                    }
+                }
 
                 // Calculate using different methods
                 const trapezoid = trapezoidMethod(f, a, b, n);
@@ -144,6 +181,13 @@
 
             } catch (error) {
                 showError(error.message);
+                // Clear plot on error
+                document.getElementById('plotContainer').innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #666;">
+                        <h4>📊 Grafik akan muncul setelah perhitungan berhasil</h4>
+                        <p>Perbaiki error di atas untuk melihat visualisasi</p>
+                    </div>
+                `;
             }
         }
 
@@ -235,104 +279,148 @@
         }
 
         function plotFunction(f, a, b, n) {
-            const numPoints = 1000;
-            const dx = (b - a) / numPoints;
-            const x = [];
-            const y = [];
+            try {
+                const numPoints = 1000;
+                const dx = (b - a) / numPoints;
+                const x = [];
+                const y = [];
 
-            for (let i = 0; i <= numPoints; i++) {
-                const xi = a + i * dx;
-                x.push(xi);
-                y.push(f(xi));
-            }
-
-            // Create trapezoid visualization
-            const h = (b - a) / n;
-            const trapX = [];
-            const trapY = [];
-
-            for (let i = 0; i <= n; i++) {
-                const xi = a + i * h;
-                trapX.push(xi);
-                trapY.push(f(xi));
-            }
-
-            // Create trapezoid shapes
-            const shapes = [];
-            for (let i = 0; i < n; i++) {
-                const x1 = a + i * h;
-                const x2 = a + (i + 1) * h;
-                shapes.push({
-                    type: 'rect',
-                    x0: x1,
-                    y0: 0,
-                    x1: x2,
-                    y1: Math.min(f(x1), f(x2)),
-                    fillcolor: 'rgba(79, 172, 254, 0.3)',
-                    line: { color: 'rgba(79, 172, 254, 0.8)' }
-                });
-            }
-
-            const trace1 = {
-                x: x,
-                y: y,
-                type: 'scatter',
-                mode: 'lines',
-                name: `f(x) = ${currentResults.function}`,
-                line: { color: '#667eea', width: 3 }
-            };
-
-            const trace2 = {
-                x: trapX,
-                y: trapY,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Titik Trapezoid',
-                line: { color: '#f5576c', width: 2 },
-                marker: { color: '#f5576c', size: 8 }
-            };
-
-            // Responsive layout configuration
-            const isMobile = window.innerWidth <= 768;
-            
-            const layout = {
-                title: {
-                    text: `Visualisasi Integral: f(x) = ${currentResults.function}`,
-                    font: { size: isMobile ? 14 : 16 }
-                },
-                xaxis: { 
-                    title: { text: 'x', font: { size: isMobile ? 12 : 14 } },
-                    tickfont: { size: isMobile ? 10 : 12 }
-                },
-                yaxis: { 
-                    title: { text: 'f(x)', font: { size: isMobile ? 12 : 14 } },
-                    tickfont: { size: isMobile ? 10 : 12 }
-                },
-                shapes: shapes,
-                showlegend: !isMobile, // Hide legend on mobile to save space
-                responsive: true,
-                margin: {
-                    l: isMobile ? 40 : 60,
-                    r: isMobile ? 20 : 40,
-                    t: isMobile ? 40 : 60,
-                    b: isMobile ? 40 : 60
-                },
-                legend: {
-                    orientation: isMobile ? 'h' : 'v',
-                    x: isMobile ? 0 : 1,
-                    y: isMobile ? -0.2 : 1,
-                    font: { size: isMobile ? 10 : 12 }
+                // Safe function evaluation with domain checking
+                for (let i = 0; i <= numPoints; i++) {
+                    const xi = a + i * dx;
+                    try {
+                        const yi = f(xi);
+                        if (isFinite(yi) && !isNaN(yi)) {
+                            x.push(xi);
+                            y.push(yi);
+                        }
+                    } catch (e) {
+                        // Skip problematic points
+                        continue;
+                    }
                 }
-            };
 
-            const config = {
-                responsive: true,
-                displayModeBar: !isMobile, // Hide toolbar on mobile
-                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
-                displaylogo: false
-            };
+                if (x.length === 0) {
+                    throw new Error('Tidak ada titik valid dalam domain yang diberikan');
+                }
 
-            Plotly.newPlot('plotContainer', [trace1, trace2], layout, config);
+                // Create trapezoid visualization with safe evaluation
+                const h = (b - a) / n;
+                const trapX = [];
+                const trapY = [];
+
+                for (let i = 0; i <= n; i++) {
+                    const xi = a + i * h;
+                    try {
+                        const yi = f(xi);
+                        if (isFinite(yi) && !isNaN(yi)) {
+                            trapX.push(xi);
+                            trapY.push(yi);
+                        }
+                    } catch (e) {
+                        // Use zero for problematic points
+                        trapX.push(xi);
+                        trapY.push(0);
+                    }
+                }
+
+                // Create trapezoid shapes with safe evaluation
+                const shapes = [];
+                for (let i = 0; i < n; i++) {
+                    const x1 = a + i * h;
+                    const x2 = a + (i + 1) * h;
+                    try {
+                        const y1 = f(x1);
+                        const y2 = f(x2);
+                        if (isFinite(y1) && isFinite(y2) && !isNaN(y1) && !isNaN(y2)) {
+                            shapes.push({
+                                type: 'rect',
+                                x0: x1,
+                                y0: 0,
+                                x1: x2,
+                                y1: Math.min(y1, y2),
+                                fillcolor: 'rgba(79, 172, 254, 0.3)',
+                                line: { color: 'rgba(79, 172, 254, 0.8)' }
+                            });
+                        }
+                    } catch (e) {
+                        // Skip problematic trapezoids
+                        continue;
+                    }
+                }
+
+                const trace1 = {
+                    x: x,
+                    y: y,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: `f(x) = ${currentResults.function}`,
+                    line: { color: '#667eea', width: 3 },
+                    connectgaps: false
+                };
+
+                const trace2 = {
+                    x: trapX,
+                    y: trapY,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Titik Trapezoid',
+                    line: { color: '#f5576c', width: 2 },
+                    marker: { color: '#f5576c', size: 8 }
+                };
+
+                // Responsive layout configuration
+                const isMobile = window.innerWidth <= 768;
+                
+                const layout = {
+                    title: {
+                        text: `Visualisasi Integral: f(x) = ${currentResults.function}`,
+                        font: { size: isMobile ? 14 : 16 }
+                    },
+                    xaxis: { 
+                        title: { text: 'x', font: { size: isMobile ? 12 : 14 } },
+                        tickfont: { size: isMobile ? 10 : 12 }
+                    },
+                    yaxis: { 
+                        title: { text: 'f(x)', font: { size: isMobile ? 12 : 14 } },
+                        tickfont: { size: isMobile ? 10 : 12 }
+                    },
+                    shapes: shapes,
+                    showlegend: !isMobile,
+                    responsive: true,
+                    margin: {
+                        l: isMobile ? 40 : 60,
+                        r: isMobile ? 20 : 40,
+                        t: isMobile ? 40 : 60,
+                        b: isMobile ? 40 : 60
+                    },
+                    legend: {
+                        orientation: isMobile ? 'h' : 'v',
+                        x: isMobile ? 0 : 1,
+                        y: isMobile ? -0.2 : 1,
+                        font: { size: isMobile ? 10 : 12 }
+                    }
+                };
+
+                const config = {
+                    responsive: true,
+                    displayModeBar: !isMobile,
+                    modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+                    displaylogo: false
+                };
+
+                Plotly.newPlot('plotContainer', [trace1, trace2], layout, config);
+            } catch (error) {
+                document.getElementById('plotContainer').innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #d63031;">
+                        <h4>❌ Error dalam membuat grafik</h4>
+                        <p>${error.message}</p>
+                        <p style="font-size: 0.9rem; opacity: 0.7;">
+                            Tip: Periksa domain fungsi (mis: log(x) memerlukan x > 0)
+                        </p>
+                    </div>
+                `;
+            }
         }
 
         function showError(message) {
